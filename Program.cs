@@ -22,7 +22,15 @@ namespace RockPaperScissors
             if((currentPlayer = (from p in players where p.Name == name select p).FirstOrDefault()) == null) {
                 // if no player exists, create in list (all lowercase) with all 0's, write file
                 currentPlayer = new Player(name);
+                consoleSendLine($"Player { name } was not found and has been created as a new player");
                 Log("Info",$"Player { name } was not found and has been created as a new player");
+            }
+            else {
+                consoleSendLine($"Welcome Back {currentPlayer.Name}!");
+                consoleSendLine($"Previous Stats:");
+                consoleSendLine($"\tWins: {currentPlayer.Wins} ({currentPlayer.WinRatio.ToString("G2")}%)");
+                consoleSendLine($"\tLosses: {currentPlayer.Losses} ({currentPlayer.LossRatio.ToString("G2")}%)");
+                consoleSendLine($"\tDraws: {currentPlayer.Draws} ({currentPlayer.DrawRatio.ToString("G2")}%)");
             }
 
             while(true) {
@@ -35,12 +43,19 @@ namespace RockPaperScissors
                     // Play Game
                     case 1: 
                         // Create new Game
-                        // Get User Option
                         // Get Random option for PC
+                        Game game = new Game();
+
+                        // Get User Option
+                        game.getUserPlay();
+
                         // Compare to see who won
                         // Add W/L/D to playerStat
-                        // Write playerStat to file
+                        currentPlayer.addGame(game.Result);
+                        addTransation(currentPlayer.Name,game.ToString());
+                        
                         // Display W/L/D to player
+                        game.displayResult();
                         break;
                     // View Stats
                     case 2: 
@@ -49,11 +64,51 @@ namespace RockPaperScissors
                         break;
                     // Exit
                     case 3:
+                        updateList(players, currentPlayer);
+                        // Write playerStat to file
+                        saveAll(players);
+
                         return;
                     default: 
                         break;
                 }
                 // Loop
+            }
+        }
+
+        private static void updateList(List<Player> list, Player updatedPlayer)
+        {
+            Player remove = (from p in list where p.Name == updatedPlayer.Name select p).FirstOrDefault();
+            if(remove != null) {
+                list.Remove(remove);
+            }
+            list.Add(updatedPlayer);
+
+        }
+
+        private static void addTransation(string playerName, string gameString)
+        {
+            try {
+                using(StreamWriter transactSW = new StreamWriter(RPS_Const.transactionLog,true)) {
+                    transactSW.WriteLine($"{playerName},{gameString}");
+                }
+            }
+            catch(Exception e) {
+                Log("Error",$"Unable to write to transaction log: {e.Message}");
+            }
+        }
+
+        private static void saveAll(List<Player> listIn)
+        {
+            try {
+                using(StreamWriter playerDataSW = new StreamWriter(RPS_Const.playerLogFile,false)) {
+                    foreach(Player p in listIn) {
+                        playerDataSW.WriteLine(p.ToString());
+                    }
+                }
+            }
+            catch(Exception ex) {
+                Log("Error",$"Unable to save player data: {ex.Message}");
             }
         }
 
@@ -70,10 +125,8 @@ namespace RockPaperScissors
                             Player inP = new Player(line[0].ToString(),Int32.Parse(line[1].ToString()),Int32.Parse(line[2].ToString()),Int32.Parse(line[3].ToString()));
                             loadList.Add(inP);
                         }
-                        catch(Exception ex) {
+                        catch(Exception) {
                             Log("Warning", $"Exception importing player data on line { lineCount }. Skipping line: \n\t { data } ");
-                            Console.WriteLine(ex.Message);
-                            Console.WriteLine(ex.StackTrace);
                             continue;
                         }
                         lineCount++;
@@ -89,17 +142,23 @@ namespace RockPaperScissors
 
         private static void Log(string loglevel, string message)
         {
-            string timestamp = $"{ DateTime.Now.Date.ToString() } { DateTime.Now.TimeOfDay.ToString() }";
-            Console.WriteLine(message);
-            //throw new NotImplementedException();
+            string timestamp = $"{ DateTime.Now.Month }/{ DateTime.Now.Day }/{ DateTime.Now.Year } { DateTime.Now.TimeOfDay.ToString() }";
+            using(StreamWriter logSW = new StreamWriter(RPS_Const.appLog,true)) {
+                logSW.WriteLine($"{timestamp}\t{loglevel}\t\t{message}");
+            }
         }
 
         private static string promptPlayerName()
         {
             string input = "";
-            Console.WriteLine("Input player's name:");
-            input = Console.ReadLine();
+            input = sendPrompt("Input player's name:");
             return input;
+        }
+
+        private static string sendPrompt(string message)
+        {
+            consoleSendLine($"<<< {message} \n>>> ",false,false);
+            return Console.ReadLine();
         }
 
         private static int displayMainMenu()
@@ -110,7 +169,6 @@ namespace RockPaperScissors
 
             List<string> lines = new List<string>();
             lines.Add("Rock <-> Paper <-> Scissors");
-            lines.Add("What would you like to do?");
             lines.Add("1. Play!");
             lines.Add("2. View Global Statistics");
             lines.Add("3. Exit");
@@ -120,27 +178,26 @@ namespace RockPaperScissors
             }
 
             for(int i = 0; i < borderWidth; i++) {
-                Console.Write(border);
+                consoleSendLine(border,false,false);
             }
 
-            Console.WriteLine();
+            consoleSendLine("",true,false);
 
             foreach(string s in lines) {
                 int sLen = s.Length + 4;
-                Console.Write($"| { s }");
+                consoleSendLine($"| { s }",false,false);
                 for(int i = 0; i < borderWidth - sLen; i++) {
-                    Console.Write(" ");
+                    consoleSendLine(" ",false,false);
                 }
-                Console.WriteLine(" |");
+                consoleSendLine(" |",true,false);
             }
             
             for(int i = 0; i < borderWidth; i++) {
-                Console.Write(border);
+                consoleSendLine(border,false,false);
             }
-            Console.WriteLine("\n");
+            consoleSendLine("\n",false,false);
 
-            Console.Write("--> ");
-            choiceIn = Console.ReadLine();
+            choiceIn = sendPrompt("What would you like to do?");
 
             int choice;
             try {
@@ -150,7 +207,18 @@ namespace RockPaperScissors
                 return 0;
             }
             return choice;
-            //throw new NotImplementedException();
+        }
+
+        public static void consoleSendLine(string message, bool newLine = true, bool lineHeading = true) {
+            if(lineHeading) {
+                Console.Write("<<< ");
+            }
+            
+            Console.Write(message);
+
+            if(newLine) {
+                Console.Write("\n");
+            }
         }
     }
 }
