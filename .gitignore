@@ -1,7 +1,7 @@
 *.txt
 !challenge.txt
 
-
+playerTransactionLog.csv
 
 
 ## Ignore Visual Studio temporary files, build results, and
