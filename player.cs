@@ -1,3 +1,6 @@
+using System;
+using System.Text;
+
 namespace RockPaperScissors
 {
     class Player
@@ -30,8 +33,41 @@ namespace RockPaperScissors
             set { _draws = value; }
         }
  
-        public decimal WinRatio { get => _wins / (TotalGames); }
-        public decimal LossRatio { get => _losses / (TotalGames); }
+        public decimal WinRatio { 
+            get { 
+                try {
+                    decimal output = (((decimal)_wins / (decimal)TotalGames)*100);
+                    return output;
+                }
+                catch(DivideByZeroException) {
+                    return 0;
+                }
+            } 
+        }
+
+        public decimal LossRatio { 
+            get {
+                try {
+                    decimal output = (((decimal)_losses / (decimal)TotalGames)*100); 
+                    return output;
+                }
+                catch(DivideByZeroException) {
+                    return 0;
+                }
+            } 
+        }
+
+        public decimal DrawRatio { 
+            get {
+                try {
+                    decimal output = (((decimal)_draws / (decimal)TotalGames)*100); 
+                    return output;
+                }
+                catch(DivideByZeroException) {
+                    return 0;
+                }
+            } 
+        }
         public int TotalGames { get => _wins + _losses + _draws; }
 
         public Player (string name, int wins, int losses, int draws) {
@@ -44,5 +80,27 @@ namespace RockPaperScissors
         public Player(string name) : this(name,0,0,0) {}
 
         public Player() : this("anonymous") {}
+
+        public void addGame(int gameResult) {
+            if(gameResult > 0) {
+                this._wins++;
+            }
+            else if (gameResult < 0) {
+                this._losses++;
+            }
+            else {
+                this._draws++;
+            }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"{this.Name},");
+            sb.Append($"{this.Wins},");
+            sb.Append($"{this.Losses},");
+            sb.Append($"{this.Draws}");
+            return sb.ToString();
+        }
     }
 }
