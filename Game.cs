@@ -5,7 +5,7 @@ namespace RockPaperScissors
 {
     internal class Game
     {
-        private static int gameID = 0;
+        private int gameID = 0;
         private int _playerInput;
         public int PlayerInput
         {
@@ -32,9 +32,8 @@ namespace RockPaperScissors
             }
         }
         
-        public Game()
-        {
-            gameID++;
+        public Game(int id) {
+            this.gameID = id;
             Random rdm = new Random();
             _pcInput = (rdm.Next(3)+1);
             Console.WriteLine("Welcome to Rock <> Paper <> Scissors!");
@@ -72,20 +71,16 @@ namespace RockPaperScissors
             }
         }
 
-        public void displayResult()
-        {
+        public string getResultString() {
             switch(Result) {
                 case -1:
-                    Console.WriteLine("Oooh sorry, you lost!");
-                    break;
+                    return ("You lost!");
                 case 0:
-                    Console.WriteLine("Well, it wasn't a loss, but it wasn't a win. Draw!");
-                    break;  
+                    return ("Draw!");
                 case 1:
-                    Console.WriteLine("Congrats! You Won!");
-                    break;
+                    return ("You Won!");
                 default:
-                    break;
+                    return ("Error in result");
             }  
         }
     
@@ -97,5 +92,9 @@ namespace RockPaperScissors
             sb.Append($"{this.Result}");
             return sb.ToString();
         }
+    }
+
+    enum RPS {
+        Rock, Paper, Scissors
     }
 }
