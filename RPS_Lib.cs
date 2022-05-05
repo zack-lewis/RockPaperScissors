@@ -3,13 +3,16 @@ using System.Collections.Generic;
 
 namespace RockPaperScissors
 {
-    static class RPS_Const
+    static class RPS_Lib
     {
         public static string playerLogFile = "player_log.csv";
         public static string appLog = "RockPaperScissors.log";
         public static string currentPlayerName = "";
         public static List<Player> players = new List<Player>();
         public static Player currentPlayer;
+        public static Game game; 
+        public static string welcomeMsg;
+        public static string statMsg;
 
         public static void consoleSendLine(string message, bool newLine = true, bool lineHeading = true) {
             if(lineHeading) {
@@ -32,25 +35,31 @@ namespace RockPaperScissors
             }
 
             for(int i = 0; i < borderWidth; i++) {
-                RPS_Const.consoleSendLine(border,false,false);
+                RPS_Lib.consoleSendLine(border,false,false);
             }
 
-            RPS_Const.consoleSendLine("",true,false);
+            RPS_Lib.consoleSendLine("",true,false);
 
             foreach(string s in stringList) {
                 int sLen = s.Length + 4;
-                RPS_Const.consoleSendLine($"| { s }",false,false);
+                RPS_Lib.consoleSendLine($"| { s }",false,false);
                 for(int i = 0; i < borderWidth - sLen; i++) {
-                    RPS_Const.consoleSendLine(" ",false,false);
+                    RPS_Lib.consoleSendLine(" ",false,false);
                 }
-                RPS_Const.consoleSendLine(" |",true,false);
+                RPS_Lib.consoleSendLine(" |",true,false);
             }
             
             for(int i = 0; i < borderWidth; i++) {
-                RPS_Const.consoleSendLine(border,false,false);
+                RPS_Lib.consoleSendLine(border,false,false);
             }
-            RPS_Const.consoleSendLine("\n",false,false);
+            RPS_Lib.consoleSendLine("\n",false,false);
 
+        }
+    
+        public static string sendPrompt(string message)
+        {
+            RPS_Lib.consoleSendLine($"<<< {message} \n>>> ",false,false);
+            return Console.ReadLine();
         }
     }
 
