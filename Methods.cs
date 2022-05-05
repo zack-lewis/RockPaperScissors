@@ -12,6 +12,7 @@ namespace RockPaperScissors {
             // 0: New player
             // 1: Existing Player
             while(true) {    
+                Console.Clear();
                 List<string> lines = new List<string>();
                 lines.Add("Welcome to Rock, Paper, Scissors!");
                 lines.Add("1. New Player");
@@ -131,11 +132,16 @@ namespace RockPaperScissors {
             RPS_Lib.statMsg = ($"Current Round: { RPS_Lib.currentPlayer.TotalGames+1 } (W:{ RPS_Lib.currentPlayer.Wins } / L:{ RPS_Lib.currentPlayer.Losses } / D:{ RPS_Lib.currentPlayer.Draws })");
             string choiceIn = "";
             Console.Clear();
-            RPS_Lib.consoleSendLine(RPS_Lib.welcomeMsg);
-            RPS_Lib.consoleSendLine(RPS_Lib.statMsg);
-            if(!newGame) {
+
+            if (newGame)
+            {
+                RPS_Lib.consoleSendLine(RPS_Lib.welcomeMsg);
+                RPS_Lib.consoleSendLine(RPS_Lib.statMsg);
+            }
+            else
+            {
                 // Display W/L/D to player
-                RPS_Lib.consoleSendLine($"You chose { (RPS)RPS_Lib.game.PlayerInput-1 }. The Computer chose { (RPS)RPS_Lib.game.PCInput-1 }. {RPS_Lib.game.getResultString() }");
+                RPS_Lib.consoleSendLine($"You chose {(RPS)RPS_Lib.game.PlayerInput - 1}. The Computer chose {(RPS)RPS_Lib.game.PCInput - 1}. {RPS_Lib.game.getResultString()}");
             }
 
             List<string> lines = new List<string>();
@@ -165,6 +171,7 @@ namespace RockPaperScissors {
         }
     
         public static void displayPlayerStats() {
+            Console.Clear();
             List<string> stringList = new List<string>();
             stringList.Add($"{ RPS_Lib.currentPlayer.Name }, here are your game play statistics…");
             stringList.Add($"Wins: { RPS_Lib.currentPlayer.Wins } ({ RPS_Lib.currentPlayer.WinRatio.ToString("F2") }%)");
@@ -174,7 +181,46 @@ namespace RockPaperScissors {
             stringList.Add($"Win/Loss Ratio: { RPS_Lib.currentPlayer.WinRatio/RPS_Lib.currentPlayer.Losses }");
             RPS_Lib.showMenu(stringList);
 
-            RPS_Lib.sendPrompt("Press any key to return to menu....");
+            RPS_Lib.sendPrompt("Press <Enter> to return to menu....");
+        }
+    
+        public static void showLeaderboard() {
+            Console.Clear();
+            string delimiter = "----------------------";
+            List<string> stringList = new List<string>();
+            var top10Wins = (from p in RPS_Lib.players orderby p.Wins select p).Take(10);
+            var top5GamesPlayed = (from p in RPS_Lib.players orderby p.TotalGames select p).Take(5);
+
+            stringList.Add("Global Game Statistics");
+            stringList.Add(delimiter);
+            stringList.Add(delimiter);
+            stringList.Add("Top 10 Winning Players:");
+            stringList.Add(delimiter);
+            foreach(var p in top10Wins) {
+                stringList.Add($"- { p.Name }: { p.Wins }");
+            }
+            stringList.Add(" ");
+
+            stringList.Add(delimiter);
+            stringList.Add("Most Games Played:");
+            stringList.Add(delimiter);
+            foreach(var p in top5GamesPlayed) {
+                stringList.Add($"- { p.Name }: { p.TotalGames }");
+            }
+            stringList.Add(" ");
+
+            stringList.Add(delimiter);
+            stringList.Add($"Win/Loss Ration: { RPS_Lib.overallWLRatio() }");
+            stringList.Add(delimiter);
+            stringList.Add(" ");
+
+            stringList.Add(delimiter);
+            stringList.Add($"Total Games Played: { RPS_Lib.overallTotalGames() }");
+            stringList.Add(delimiter);
+            stringList.Add(" ");
+            RPS_Lib.showMenu(stringList);
+
+            RPS_Lib.sendPrompt("Press <Enter> to return to menu....");
         }
     }
 }
