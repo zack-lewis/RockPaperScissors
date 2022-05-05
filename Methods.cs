@@ -13,6 +13,11 @@ namespace RockPaperScissors {
             // 1: Existing Player
             while(true) {    
                 Console.Clear();
+                if(RPS_Lib.inputErrorMsg != null) {
+                    RPS_Lib.consoleSendLine(RPS_Lib.inputErrorMsg);
+                    RPS_Lib.inputErrorMsg = null;
+                }
+
                 List<string> lines = new List<string>();
                 lines.Add("Welcome to Rock, Paper, Scissors!");
                 lines.Add("1. New Player");
@@ -34,7 +39,7 @@ namespace RockPaperScissors {
                                 return 0;
                             }
                             else {
-                                RPS_Lib.consoleSendLine($"Sorry { RPS_Lib.currentPlayerName }, your game already exists.\n");
+                                RPS_Lib.inputErrorMsg = ($"Sorry { RPS_Lib.currentPlayerName }, your game already exists.\n");
                                 continue;
                             }
                         case 2:
@@ -43,7 +48,7 @@ namespace RockPaperScissors {
                                 return 1;  
                             }
                             else {
-                                RPS_Lib.consoleSendLine($"Sorry { RPS_Lib.currentPlayerName }, your game could not be found.\n");
+                                RPS_Lib.inputErrorMsg = ($"Sorry { RPS_Lib.currentPlayerName }, your game could not be found.\n");
                                 continue;
                             }
                         case 3:
@@ -54,7 +59,7 @@ namespace RockPaperScissors {
                 }
                 catch (Exception ex) {
                     Log("Error", ex.Message);
-                    RPS_Lib.consoleSendLine("I don't think that's an option\n");
+                    RPS_Lib.inputErrorMsg = ("I don't think that's an option\n");
                     continue;
                 }
             }
@@ -95,6 +100,10 @@ namespace RockPaperScissors {
                         string[] line = data.Split(",");
                         try {
                             Player inP = new Player(line[0].ToString(),Int32.Parse(line[1].ToString()),Int32.Parse(line[2].ToString()),Int32.Parse(line[3].ToString()));
+                            Game.totalWins += inP.Wins;
+                            Game.totalLosses += inP.Losses;
+                            Game.totalDraws += inP.Draws;
+
                             loadList.Add(inP);
                         }
                         catch(Exception) {
@@ -178,7 +187,12 @@ namespace RockPaperScissors {
             stringList.Add($"Losses:  { RPS_Lib.currentPlayer.Losses } ({ RPS_Lib.currentPlayer.LossRatio.ToString("F2") }%)");
             stringList.Add($"Draws: { RPS_Lib.currentPlayer.Draws } ({ RPS_Lib.currentPlayer.DrawRatio.ToString("F2") }%)");
             stringList.Add($"");
-            stringList.Add($"Win/Loss Ratio: { RPS_Lib.currentPlayer.WinRatio/RPS_Lib.currentPlayer.Losses }");
+            if(RPS_Lib.currentPlayer.Losses != 0) {
+                stringList.Add($"Win/Loss Ratio: { (RPS_Lib.currentPlayer.Wins/RPS_Lib.currentPlayer.Losses).ToString("F2") }");
+            }
+            else {
+                stringList.Add($"Win/Loss Ratio: { RPS_Lib.currentPlayer.Wins }");
+            }
             RPS_Lib.showMenu(stringList);
 
             RPS_Lib.sendPrompt("Press <Enter> to return to menu....");
@@ -188,8 +202,8 @@ namespace RockPaperScissors {
             Console.Clear();
             string delimiter = "----------------------";
             List<string> stringList = new List<string>();
-            var top10Wins = (from p in RPS_Lib.players orderby p.Wins select p).Take(10);
-            var top5GamesPlayed = (from p in RPS_Lib.players orderby p.TotalGames select p).Take(5);
+            var top10Wins = (from p in RPS_Lib.players orderby p.Wins descending select p).Take(10);
+            var top5GamesPlayed = (from p in RPS_Lib.players orderby p.TotalGames descending select p).Take(5);
 
             stringList.Add("Global Game Statistics");
             stringList.Add(delimiter);
@@ -210,12 +224,12 @@ namespace RockPaperScissors {
             stringList.Add(" ");
 
             stringList.Add(delimiter);
-            stringList.Add($"Win/Loss Ration: { RPS_Lib.overallWLRatio() }");
+            stringList.Add($"Win/Loss Ratio: { RPS_Lib.overallWLRatio() }");
             stringList.Add(delimiter);
             stringList.Add(" ");
 
             stringList.Add(delimiter);
-            stringList.Add($"Total Games Played: { RPS_Lib.overallTotalGames() }");
+            stringList.Add($"Total Games Played: { Game.totalGames }");
             stringList.Add(delimiter);
             stringList.Add(" ");
             RPS_Lib.showMenu(stringList);
