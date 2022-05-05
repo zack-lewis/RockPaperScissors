@@ -28,7 +28,7 @@ namespace RockPaperScissors
     
         public static void showMenu(List<string> stringList) {
             const string border = "-";
-            int borderWidth = 0;
+            int borderWidth = 40;
                         
             foreach(string s in stringList) {
                 borderWidth = Math.Max(borderWidth, s.Length + 6);
@@ -42,6 +42,7 @@ namespace RockPaperScissors
 
             foreach(string s in stringList) {
                 int sLen = s.Length + 4;
+                
                 RPS_Lib.consoleSendLine($"| { s }",false,false);
                 for(int i = 0; i < borderWidth - sLen; i++) {
                     RPS_Lib.consoleSendLine(" ",false,false);
@@ -60,6 +61,25 @@ namespace RockPaperScissors
         {
             RPS_Lib.consoleSendLine($"<<< {message} \n>>> ",false,false);
             return Console.ReadLine();
+        }
+
+        public static decimal overallWLRatio()
+        {
+            int totalWins = 0;
+            int totalLosses = 0;
+            foreach(var p in RPS_Lib.players) {
+                totalWins += p.Wins;
+                totalLosses += p.Losses;
+            }
+            return totalWins/totalLosses;
+        }
+
+        public static int overallTotalGames() {
+            int total = 0;
+            foreach(var p in RPS_Lib.players) {
+                total += p.TotalGames;
+            }
+            return total;
         }
     }
 
