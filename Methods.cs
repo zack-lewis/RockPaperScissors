@@ -12,40 +12,37 @@ namespace RockPaperScissors {
             // 0: New player
             // 1: Existing Player
             while(true) {    
-                RPS_Const.consoleSendLine("Welcome to Rock, Paper, Scissors!");
-                RPS_Const.consoleSendLine("1. New Player");
-                RPS_Const.consoleSendLine("2. Load Player");
-                RPS_Const.consoleSendLine("3. Quit");
-                string initialMenuPrompt = sendPrompt("Enter Choice:");
+                List<string> lines = new List<string>();
+                lines.Add("Welcome to Rock, Paper, Scissors!");
+                lines.Add("1. New Player");
+                lines.Add("2. Load Player");
+                lines.Add("3. Quit");
+                RPS_Lib.showMenu(lines);
+
+                string initialMenuPrompt = RPS_Lib.sendPrompt("Enter Choice:");
                 
                 try {
                     int newOrLoad = Int32.Parse(initialMenuPrompt);
-                    Player existingPlayer = null;
                     if(newOrLoad == 1 || newOrLoad == 2) {
-                        RPS_Const.currentPlayerName = promptPlayerName();
-                        existingPlayer = (from p in RPS_Const.players where p.Name == RPS_Const.currentPlayerName select p).FirstOrDefault();
+                        RPS_Lib.currentPlayerName = promptPlayerName();
+                        RPS_Lib.currentPlayer = (from p in RPS_Lib.players where p.Name == RPS_Lib.currentPlayerName select p).FirstOrDefault();
                     }
                     switch(newOrLoad) {
                         case 1:
-                            if (existingPlayer == null) {
-                                RPS_Const.consoleSendLine($"Hello { RPS_Const.currentPlayerName }. Let's play!\n");
+                            if (RPS_Lib.currentPlayer == null) {
                                 return 0;
                             }
                             else {
-                                RPS_Const.consoleSendLine($"Sorry { RPS_Const.currentPlayerName }, your game already exists.\n");
-                                Console.Beep();
+                                RPS_Lib.consoleSendLine($"Sorry { RPS_Lib.currentPlayerName }, your game already exists.\n");
                                 continue;
                             }
                         case 2:
                             // Get Name
-                            if (existingPlayer != null) {
-                                RPS_Const.consoleSendLine($"Current Round: { existingPlayer.TotalGames+1 } W:{ existingPlayer.Wins } / L:{ existingPlayer.Losses } / D:{ existingPlayer.Draws }");
-                                RPS_Const.consoleSendLine($"Welcome back { RPS_Const.currentPlayerName }. Let's play!\n");
+                            if (RPS_Lib.currentPlayer != null) {
                                 return 1;  
                             }
                             else {
-                                RPS_Const.consoleSendLine($"Sorry { RPS_Const.currentPlayerName }, your game could not be found.\n");
-                                Console.Beep();
+                                RPS_Lib.consoleSendLine($"Sorry { RPS_Lib.currentPlayerName }, your game could not be found.\n");
                                 continue;
                             }
                         case 3:
@@ -56,7 +53,7 @@ namespace RockPaperScissors {
                 }
                 catch (Exception ex) {
                     Log("Error", ex.Message);
-                    RPS_Const.consoleSendLine("I don't think that's an option\n");
+                    RPS_Lib.consoleSendLine("I don't think that's an option\n");
                     continue;
                 }
             }
@@ -64,19 +61,19 @@ namespace RockPaperScissors {
         
         private static void updateList()
         {
-            Player remove = (from p in RPS_Const.players where p.Name == RPS_Const.currentPlayer.Name select p).FirstOrDefault();
+            Player remove = (from p in RPS_Lib.players where p.Name == RPS_Lib.currentPlayer.Name select p).FirstOrDefault();
             if(remove != null) {
-                RPS_Const.players.Remove(remove);
+                RPS_Lib.players.Remove(remove);
             }
-            RPS_Const.players.Add(RPS_Const.currentPlayer);
+            RPS_Lib.players.Add(RPS_Lib.currentPlayer);
 
         }
 
         private static void saveAll()
         {
             try {
-                using(StreamWriter playerDataSW = new StreamWriter(RPS_Const.playerLogFile,false)) {
-                    foreach(Player p in RPS_Const.players) {
+                using(StreamWriter playerDataSW = new StreamWriter(RPS_Lib.playerLogFile,false)) {
+                    foreach(Player p in RPS_Lib.players) {
                         playerDataSW.WriteLine(p.ToString());
                     }
                 }
@@ -90,7 +87,7 @@ namespace RockPaperScissors {
         {
             List<Player> loadList = new List<Player>();
             try {
-                using(StreamReader sr = new StreamReader(RPS_Const.playerLogFile)) {
+                using(StreamReader sr = new StreamReader(RPS_Lib.playerLogFile)) {
                     string data = "";
                     int lineCount = 0;
                     while((data = sr.ReadLine()) != null){
@@ -117,7 +114,7 @@ namespace RockPaperScissors {
         private static void Log(string loglevel, string message)
         {
             string timestamp = $"{ DateTime.Now.Month }/{ DateTime.Now.Day }/{ DateTime.Now.Year } { DateTime.Now.TimeOfDay.ToString() }";
-            using(StreamWriter logSW = new StreamWriter(RPS_Const.appLog,true)) {
+            using(StreamWriter logSW = new StreamWriter(RPS_Lib.appLog,true)) {
                 logSW.WriteLine($"{timestamp}\t{loglevel}\t\t{message}");
             }
         }
@@ -125,23 +122,24 @@ namespace RockPaperScissors {
         private static string promptPlayerName()
         {
             string input = "";
-            input = sendPrompt("What is your name?");
+            input = RPS_Lib.sendPrompt("What is your name?");
             return input;
-        }
-
-        private static string sendPrompt(string message)
-        {
-            RPS_Const.consoleSendLine($"<<< {message} \n>>> ",false,false);
-            return Console.ReadLine();
         }
 
         private static int displayMainMenu(bool newGame = true)
         {
+            RPS_Lib.statMsg = ($"Current Round: { RPS_Lib.currentPlayer.TotalGames+1 } (W:{ RPS_Lib.currentPlayer.Wins } / L:{ RPS_Lib.currentPlayer.Losses } / D:{ RPS_Lib.currentPlayer.Draws })");
             string choiceIn = "";
+            Console.Clear();
+            RPS_Lib.consoleSendLine(RPS_Lib.welcomeMsg);
+            RPS_Lib.consoleSendLine(RPS_Lib.statMsg);
+            if(!newGame) {
+                // Display W/L/D to player
+                RPS_Lib.consoleSendLine($"You chose { (RPS)RPS_Lib.game.PlayerInput-1 }. The Computer chose { (RPS)RPS_Lib.game.PCInput-1 }. {RPS_Lib.game.getResultString() }");
+            }
 
             List<string> lines = new List<string>();
             lines.Add("Rock <-> Paper <-> Scissors");
-            lines.Add($"Current Round: { RPS_Const.currentPlayer.TotalGames + 1 }");
             if(newGame) {
                 lines.Add("1. Play!");
             }
@@ -152,32 +150,9 @@ namespace RockPaperScissors {
             lines.Add("3. View Leaderboard");
             lines.Add("4. Exit");
             
-            RPS_Const.showMenu(lines);
-            // foreach(string s in lines) {
-            //     borderWidth = Math.Max(borderWidth, s.Length + 6);
-            // }
+            RPS_Lib.showMenu(lines);
 
-            // for(int i = 0; i < borderWidth; i++) {
-            //     RPS_Const.consoleSendLine(border,false,false);
-            // }
-
-            // RPS_Const.consoleSendLine("",true,false);
-
-            // foreach(string s in lines) {
-            //     int sLen = s.Length + 4;
-            //     RPS_Const.consoleSendLine($"| { s }",false,false);
-            //     for(int i = 0; i < borderWidth - sLen; i++) {
-            //         RPS_Const.consoleSendLine(" ",false,false);
-            //     }
-            //     RPS_Const.consoleSendLine(" |",true,false);
-            // }
-            
-            // for(int i = 0; i < borderWidth; i++) {
-            //     RPS_Const.consoleSendLine(border,false,false);
-            // }
-            // RPS_Const.consoleSendLine("\n",false,false);
-
-            choiceIn = sendPrompt("What would you like to do?");
+            choiceIn = RPS_Lib.sendPrompt("What would you like to do?");
 
             int choice;
             try {
@@ -188,21 +163,18 @@ namespace RockPaperScissors {
             }
             return choice;
         }
-
-        // public static void consoleSendLine(string message, bool newLine = true, bool lineHeading = true) {
-        //     if(lineHeading) {
-        //         Console.Write("<<< ");
-        //     }
-            
-        //     Console.Write(message);
-
-        //     if(newLine) {
-        //         Console.Write("\n");
-        //     }
-        // }
     
         public static void displayPlayerStats() {
+            List<string> stringList = new List<string>();
+            stringList.Add($"{ RPS_Lib.currentPlayer.Name }, here are your game play statistics…");
+            stringList.Add($"Wins: { RPS_Lib.currentPlayer.Wins } ({ RPS_Lib.currentPlayer.WinRatio.ToString("F2") }%)");
+            stringList.Add($"Losses:  { RPS_Lib.currentPlayer.Losses } ({ RPS_Lib.currentPlayer.LossRatio.ToString("F2") }%)");
+            stringList.Add($"Draws: { RPS_Lib.currentPlayer.Draws } ({ RPS_Lib.currentPlayer.DrawRatio.ToString("F2") }%)");
+            stringList.Add($"");
+            stringList.Add($"Win/Loss Ratio: { RPS_Lib.currentPlayer.WinRatio/RPS_Lib.currentPlayer.Losses }");
+            RPS_Lib.showMenu(stringList);
 
+            RPS_Lib.sendPrompt("Press any key to return to menu....");
         }
     }
 }

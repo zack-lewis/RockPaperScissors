@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace RockPaperScissors
@@ -36,18 +37,19 @@ namespace RockPaperScissors
             this.gameID = id;
             Random rdm = new Random();
             _pcInput = (rdm.Next(3)+1);
-            Console.WriteLine("Welcome to Rock <> Paper <> Scissors!");
+            // Console.WriteLine("Welcome to Rock <> Paper <> Scissors!");
         }
 
         public void getUserPlay()
         {
             while(true) {
-                Console.WriteLine("What is your move? ");
-                Console.WriteLine("1. ROCK. cuz rock crush metal");
-                Console.WriteLine("2. PAPER. money is paper and money is power.");
-                Console.WriteLine("3. SCISSORS. to cut the crap out of paper or any attackers");
-                Console.Write("\n--> ");
-                string input = Console.ReadLine();
+                Console.Clear();
+                List<string> lines = new List<string>();
+                lines.Add("1. ROCK. cuz rock crush metal");
+                lines.Add("2. PAPER. money is paper and money is power.");
+                lines.Add("3. SCISSORS. to cut the crap out of paper or any attackers");
+                RPS_Lib.showMenu(lines);
+                string input = RPS_Lib.sendPrompt("What is your move?");
                 switch(input.ToUpper()) {
                     case "1":
                     case "ROCK":
