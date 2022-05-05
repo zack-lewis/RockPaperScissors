@@ -6,7 +6,16 @@ namespace RockPaperScissors
 {
     internal class Game
     {
+        public static int totalGames{
+            get { return Game.totalWins + Game.totalLosses + Game.totalDraws; }
+        }
+        
+        public static int totalWins;
+        public static int totalLosses;
+        public static int totalDraws;
+        
         private int gameID = 0;
+        
         private int _playerInput;
         public int PlayerInput
         {
