@@ -5,34 +5,78 @@ using System.Linq;
 
 namespace RockPaperScissors {
     partial class Program {
-        
-        private static void updateList(List<Player> list, Player updatedPlayer)
-        {
-            Player remove = (from p in list where p.Name == updatedPlayer.Name select p).FirstOrDefault();
-            if(remove != null) {
-                list.Remove(remove);
-            }
-            list.Add(updatedPlayer);
 
-        }
-
-        private static void addTransation(string playerName, string gameString)
-        {
-            try {
-                using(StreamWriter transactSW = new StreamWriter(RPS_Const.transactionLog,true)) {
-                    transactSW.WriteLine($"{playerName},{gameString}");
+        private static int initialMenuPrompt() {
+            // Returns: 
+            // -1: Exit
+            // 0: New player
+            // 1: Existing Player
+            while(true) {    
+                RPS_Const.consoleSendLine("Welcome to Rock, Paper, Scissors!");
+                RPS_Const.consoleSendLine("1. New Player");
+                RPS_Const.consoleSendLine("2. Load Player");
+                RPS_Const.consoleSendLine("3. Quit");
+                string initialMenuPrompt = sendPrompt("Enter Choice:");
+                
+                try {
+                    int newOrLoad = Int32.Parse(initialMenuPrompt);
+                    Player existingPlayer = null;
+                    if(newOrLoad == 1 || newOrLoad == 2) {
+                        RPS_Const.currentPlayerName = promptPlayerName();
+                        existingPlayer = (from p in RPS_Const.players where p.Name == RPS_Const.currentPlayerName select p).FirstOrDefault();
+                    }
+                    switch(newOrLoad) {
+                        case 1:
+                            if (existingPlayer == null) {
+                                RPS_Const.consoleSendLine($"Hello { RPS_Const.currentPlayerName }. Let's play!\n");
+                                return 0;
+                            }
+                            else {
+                                RPS_Const.consoleSendLine($"Sorry { RPS_Const.currentPlayerName }, your game already exists.\n");
+                                Console.Beep();
+                                continue;
+                            }
+                        case 2:
+                            // Get Name
+                            if (existingPlayer != null) {
+                                RPS_Const.consoleSendLine($"Current Round: { existingPlayer.TotalGames+1 } W:{ existingPlayer.Wins } / L:{ existingPlayer.Losses } / D:{ existingPlayer.Draws }");
+                                RPS_Const.consoleSendLine($"Welcome back { RPS_Const.currentPlayerName }. Let's play!\n");
+                                return 1;  
+                            }
+                            else {
+                                RPS_Const.consoleSendLine($"Sorry { RPS_Const.currentPlayerName }, your game could not be found.\n");
+                                Console.Beep();
+                                continue;
+                            }
+                        case 3:
+                            return -1;
+                        default:
+                            continue;                            
+                    }
+                }
+                catch (Exception ex) {
+                    Log("Error", ex.Message);
+                    RPS_Const.consoleSendLine("I don't think that's an option\n");
+                    continue;
                 }
             }
-            catch(Exception e) {
-                Log("Error",$"Unable to write to transaction log: {e.Message}");
+        }
+        
+        private static void updateList()
+        {
+            Player remove = (from p in RPS_Const.players where p.Name == RPS_Const.currentPlayer.Name select p).FirstOrDefault();
+            if(remove != null) {
+                RPS_Const.players.Remove(remove);
             }
+            RPS_Const.players.Add(RPS_Const.currentPlayer);
+
         }
 
-        private static void saveAll(List<Player> listIn)
+        private static void saveAll()
         {
             try {
                 using(StreamWriter playerDataSW = new StreamWriter(RPS_Const.playerLogFile,false)) {
-                    foreach(Player p in listIn) {
+                    foreach(Player p in RPS_Const.players) {
                         playerDataSW.WriteLine(p.ToString());
                     }
                 }
@@ -81,51 +125,57 @@ namespace RockPaperScissors {
         private static string promptPlayerName()
         {
             string input = "";
-            input = sendPrompt("Input player's name:");
+            input = sendPrompt("What is your name?");
             return input;
         }
 
         private static string sendPrompt(string message)
         {
-            consoleSendLine($"<<< {message} \n>>> ",false,false);
+            RPS_Const.consoleSendLine($"<<< {message} \n>>> ",false,false);
             return Console.ReadLine();
         }
 
-        private static int displayMainMenu()
+        private static int displayMainMenu(bool newGame = true)
         {
             string choiceIn = "";
-            const string border = "-";
-            int borderWidth = 0;
 
             List<string> lines = new List<string>();
             lines.Add("Rock <-> Paper <-> Scissors");
-            lines.Add("1. Play!");
-            lines.Add("2. View Global Statistics");
-            lines.Add("3. Exit");
+            lines.Add($"Current Round: { RPS_Const.currentPlayer.TotalGames + 1 }");
+            if(newGame) {
+                lines.Add("1. Play!");
+            }
+            else {
+                lines.Add("1. Play again!");
+            }
+            lines.Add("2. View Player Statistics");
+            lines.Add("3. View Leaderboard");
+            lines.Add("4. Exit");
             
-            foreach(string s in lines) {
-                borderWidth = Math.Max(borderWidth, s.Length + 6);
-            }
+            RPS_Const.showMenu(lines);
+            // foreach(string s in lines) {
+            //     borderWidth = Math.Max(borderWidth, s.Length + 6);
+            // }
 
-            for(int i = 0; i < borderWidth; i++) {
-                consoleSendLine(border,false,false);
-            }
+            // for(int i = 0; i < borderWidth; i++) {
+            //     RPS_Const.consoleSendLine(border,false,false);
+            // }
 
-            consoleSendLine("",true,false);
+            // RPS_Const.consoleSendLine("",true,false);
 
-            foreach(string s in lines) {
-                int sLen = s.Length + 4;
-                consoleSendLine($"| { s }",false,false);
-                for(int i = 0; i < borderWidth - sLen; i++) {
-                    consoleSendLine(" ",false,false);
-                }
-                consoleSendLine(" |",true,false);
-            }
+            // foreach(string s in lines) {
+            //     int sLen = s.Length + 4;
+            //     RPS_Const.consoleSendLine($"| { s }",false,false);
+            //     for(int i = 0; i < borderWidth - sLen; i++) {
+            //         RPS_Const.consoleSendLine(" ",false,false);
+            //     }
+            //     RPS_Const.consoleSendLine(" |",true,false);
+            // }
             
-            for(int i = 0; i < borderWidth; i++) {
-                consoleSendLine(border,false,false);
-            }
-            consoleSendLine("\n",false,false);
+            // for(int i = 0; i < borderWidth; i++) {
+            //     RPS_Const.consoleSendLine(border,false,false);
+            // }
+            // RPS_Const.consoleSendLine("\n",false,false);
 
             choiceIn = sendPrompt("What would you like to do?");
 
@@ -139,16 +189,20 @@ namespace RockPaperScissors {
             return choice;
         }
 
-        public static void consoleSendLine(string message, bool newLine = true, bool lineHeading = true) {
-            if(lineHeading) {
-                Console.Write("<<< ");
-            }
+        // public static void consoleSendLine(string message, bool newLine = true, bool lineHeading = true) {
+        //     if(lineHeading) {
+        //         Console.Write("<<< ");
+        //     }
             
-            Console.Write(message);
+        //     Console.Write(message);
 
-            if(newLine) {
-                Console.Write("\n");
-            }
+        //     if(newLine) {
+        //         Console.Write("\n");
+        //     }
+        // }
+    
+        public static void displayPlayerStats() {
+
         }
     }
 }
