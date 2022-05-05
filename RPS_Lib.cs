@@ -13,6 +13,7 @@ namespace RockPaperScissors
         public static Game game; 
         public static string welcomeMsg;
         public static string statMsg;
+        public static string inputErrorMsg = null;
 
         public static void consoleSendLine(string message, bool newLine = true, bool lineHeading = true) {
             if(lineHeading) {
@@ -42,7 +43,7 @@ namespace RockPaperScissors
 
             foreach(string s in stringList) {
                 int sLen = s.Length + 4;
-                
+
                 RPS_Lib.consoleSendLine($"| { s }",false,false);
                 for(int i = 0; i < borderWidth - sLen; i++) {
                     RPS_Lib.consoleSendLine(" ",false,false);
@@ -65,22 +66,9 @@ namespace RockPaperScissors
 
         public static decimal overallWLRatio()
         {
-            int totalWins = 0;
-            int totalLosses = 0;
-            foreach(var p in RPS_Lib.players) {
-                totalWins += p.Wins;
-                totalLosses += p.Losses;
-            }
-            return totalWins/totalLosses;
+            return (decimal)Game.totalWins/(decimal)Game.totalLosses;
         }
 
-        public static int overallTotalGames() {
-            int total = 0;
-            foreach(var p in RPS_Lib.players) {
-                total += p.TotalGames;
-            }
-            return total;
-        }
     }
 
 }
