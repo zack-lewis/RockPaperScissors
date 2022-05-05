@@ -3,7 +3,7 @@ Final Project: Rock, Paper, Scissors Game
 
 Description: Create a menu-driven rock, paper, scissors game in C# that a user plays against the computer with the ability to save and load a game and its associated play statistics. The game will also be able to display a leader board and global statistics.
 
-Project Files: player_log.csv Download player_log.csv
+Project Files: player_log.csv
 
 Requirements: Create Rock.
 

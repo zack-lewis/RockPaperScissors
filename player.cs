@@ -68,6 +68,7 @@ namespace RockPaperScissors
                 }
             } 
         }
+        
         public int TotalGames { get => _wins + _losses + _draws; }
 
         public Player (string name, int wins, int losses, int draws) {
