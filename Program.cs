@@ -65,9 +65,9 @@ namespace RockPaperScissors
                         break;
                     // Exit
                     case 3: 
-            //             // Run static queries
-            //             showLeaderboard();
-            //             // Display output
+                        // Run static queries
+                        showLeaderboard();
+                        // Display output
                         break;
                     // Exit
                     case 4:
