@@ -9,34 +9,33 @@ namespace RockPaperScissors
     {
         static void Main(string[] args)
         {   
-            List<Player> players = new List<Player>();       
+                   
             // Load all players into list
-            players = LoadPlayerData();
+            RPS_Lib.players = LoadPlayerData();
+            int menuReturn = initialMenuPrompt();
+            if(menuReturn == -1) {
+                return;
+            }
+            
+            Console.Clear();
 
-            // Get Name
-            string name = promptPlayerName();
 
             // Query List for player
             // If player exists, load stats
-            Player currentPlayer;
-            if((currentPlayer = (from p in players where p.Name == name select p).FirstOrDefault()) == null) {
-                // if no player exists, create in list (all lowercase) with all 0's, write file
-                currentPlayer = new Player(name);
-                consoleSendLine($"Player { name } was not found and has been created as a new player");
-                Log("Info",$"Player { name } was not found and has been created as a new player");
+            if(menuReturn == 1) {
+                RPS_Lib.welcomeMsg = ($"Welcome back { RPS_Lib.currentPlayerName }. Let's play!");
             }
             else {
-                consoleSendLine($"Welcome Back {currentPlayer.Name}!");
-                consoleSendLine($"Previous Stats:");
-                consoleSendLine($"\tWins: {currentPlayer.Wins} ({currentPlayer.WinRatio.ToString("G2")}%)");
-                consoleSendLine($"\tLosses: {currentPlayer.Losses} ({currentPlayer.LossRatio.ToString("G2")}%)");
-                consoleSendLine($"\tDraws: {currentPlayer.Draws} ({currentPlayer.DrawRatio.ToString("G2")}%)");
+                RPS_Lib.welcomeMsg = ($"Hello { RPS_Lib.currentPlayerName }. Let's play!\n");
+                RPS_Lib.currentPlayer = new Player(RPS_Lib.currentPlayerName);
             }
 
-            while(true) {
+            bool newGame = true;
+
+            while (true) {
                 // Display menu
                 // Get Input
-                int menuSelect = displayMainMenu();
+                int menuSelect = displayMainMenu(newGame);
                 
                 // Run Subroutine from Input
                 switch(menuSelect){
@@ -44,32 +43,40 @@ namespace RockPaperScissors
                     case 1: 
                         // Create new Game
                         // Get Random option for PC
-                        Game game = new Game();
+                        RPS_Lib.game = new Game(RPS_Lib.currentPlayer.TotalGames+1);
 
                         // Get User Option
-                        game.getUserPlay();
+                        RPS_Lib.game.getUserPlay();
 
                         // Compare to see who won
+
                         // Add W/L/D to playerStat
-                        currentPlayer.addGame(game.Result);
-                        addTransation(currentPlayer.Name,game.ToString());
-                        
-                        // Display W/L/D to player
-                        game.displayResult();
+                        RPS_Lib.currentPlayer.addGame(RPS_Lib.game.Result);
+
+                        newGame = false;
+
                         break;
-                    // View Stats
+                    // View Player Stats
                     case 2: 
                         // Run static queries
                         // Display output
+                        displayPlayerStats();
+                        
                         break;
                     // Exit
-                    case 3:
-                        updateList(players, currentPlayer);
+                    case 3: 
+            //             // Run static queries
+            //             showLeaderboard();
+            //             // Display output
+                        break;
+                    // Exit
+                    case 4:
+                        updateList();
                         // Write playerStat to file
-                        saveAll(players);
-
+                        saveAll();
                         return;
                     default: 
+                        RPS_Lib.consoleSendLine("I don't think that was a valid choice. Try again?");
                         break;
                 }
                 // Loop
